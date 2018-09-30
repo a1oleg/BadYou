@@ -20,19 +20,55 @@ namespace BadYou
         }
 
         public static void MergePerson(Person person)
-        {           
-
+        {
+            Person p = (Person)person.Clone();
             db.Cypher
-                    .Merge("(vertex:Person{Name:{name}})")
+            .Merge("(vertex:Person{Name:{name}})")
                     .OnCreate()
-                    .Set("vertex = {person}")
+                    .Set("vertex = {p}")
                     .WithParams(new
                     {
-                        name = person.Name,
-                        person
+                        name = p.Name,
+                        p
                     })
                     .ExecuteWithoutResults();
+
+            if(person.Girl)
+            {
+                MergeAndJoin(person.Name, person.City, "City");
+                MergeAndJoin(person.Name, person.Country, "Country");
+
+                foreach(string pill in person.Pills)
+                    MergeAndJoin(person.Name, pill, "Pill");
+
+                foreach (string lang in person.Languages)
+                    MergeAndJoin(person.Name, lang, "Lang");
+            }   
         }
+
+        private static void MergeAndJoin(string source, string target, string tag)
+        {
+            MergeVertex(target, tag);
+            MergeRelationship(source, target, tag);
+        }
+
+        private static void MergeVertex(string name, string tag)
+        {
+            db.Cypher
+            .Merge($"(t:{tag}{{Name:{{name}}}})")
+            .WithParam("name", name)
+            .ExecuteWithoutResults();
+            //AddLabel(name, tag);
+        }
+
+        //private static void AddLabel(string name, string tag)
+        //{
+        //    db.Cypher
+        //    .Match("(vertex)")
+        //    .Where((Person vertex) => vertex.Name == name)
+        //    .Set($"vertex:{tag}")
+        //    .ExecuteWithoutResults();
+        //}
 
         internal static void MergeRelationship(string first, string second, string relname)
         {

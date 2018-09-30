@@ -8,8 +8,10 @@ namespace BadYou
     {
         static void Main(string[] args)
         {
+            Repo.DBconnect();
+
             string path = "https://badoo.com/profile/";
-            string number = "0352259359";
+            string number = "0650343383";
             //0650343383 заполнено
             //0581386198 не заполнено
             //0352259359 я
@@ -21,7 +23,7 @@ namespace BadYou
 
             if (title[0] != "Регистрация на Badoo")
             {
-                Repo.MergePerson(new Person(doc.DocumentNode));
+                Repo.MergePerson(new Person(doc.DocumentNode, number));
             }
         }
     }
