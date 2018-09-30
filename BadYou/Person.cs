@@ -8,16 +8,17 @@ namespace BadYou
 {
     public class Person : ICloneable
     {
-        public long ID { get; set; }        
-        public bool Girl { get; set; }
-
         public string Name { get; set; }
-        int Age { get; set; }
+        
+        public string FirstName { get; set; }
+        public int Age { get; set; }
 
         public bool AboutMe { get; set; }
 
         public string City { get; set; }
-        public string Country { get; set; }        
+        //public bool Girl { get; private set; }
+
+        //public string Country { get; set; }        
 
         public List<string> Pills { get; set; }        
         public List<string> Languages { get; set; }
@@ -28,39 +29,47 @@ namespace BadYou
 
         public Person(HtmlNode nodes, string number)
         {
-            ID = Convert.ToInt64(number);
+            Name = number;
             string[] title = nodes.SelectSingleNode("/html/head/title").InnerText.Split("|");
             string[] person = title[0].Split(",");
-            string[] location = title[1].Split(",");
+            string[] location = title[1].Split(",");            
             
-            Girl = DelSpace(person[1]) == "Женщина";
 
-            if(Girl)
+            FirstName = person[0];
+            Age = Int32.Parse(person[2]);
+            City = location[0];
+            //Girl = DelSpace(person[1]) == "Женщина";
+            //Country = DelSpace(location[1]);
+
+            //var profilesection = doc.DocumentNode.SelectNodes("//span[@class=\"profile-section__txt\"]").ToList();
+            string xPath = "/html[1]/body[1]/div[2]/div[1]/main[1]/div[1]/section[1]/div[2]/div[2]/section[1]/div[8]/div[1]/div[2]/div[1]/span[1]";
+
+            AboutMe = nodes.SelectSingleNode(xPath) != null;
+
+            Pills = new List<string>();
+            if (nodes.SelectNodes("//span[@class=\"pill__text\"]") != null)
             {
-                Name = person[0];
-                Age = Int32.Parse(person[2]);
-                City = DelSpace(location[0]);
-                Country = DelSpace(location[1]);
-
-                //var profilesection = doc.DocumentNode.SelectNodes("//span[@class=\"profile-section__txt\"]").ToList();
-                string xPath = "/html[1]/body[1]/div[2]/div[1]/main[1]/div[1]/section[1]/div[2]/div[2]/section[1]/div[8]/div[1]/div[2]/div[1]/span[1]";
-
-                AboutMe = nodes.SelectSingleNode(xPath) != null;                
-
-                Pills = new List<string>();
-                foreach (var pill in nodes.SelectNodes("//span[@class=\"pill__text\"]")/*.ToList()*/)
+                foreach (var pill in nodes.SelectNodes("//span[@class=\"pill__text\"]"))
                     Pills.Add(pill.InnerText);
+            }
 
-                Languages = new List<string>();
-                foreach (var lang in nodes.SelectNodes("//h2[@class=\"profile-section__title-text\"]").Last().ChildNodes/*.ToList()*/)
+            Languages = new List<string>();
+
+            if (nodes.SelectNodes("//h2[@class=\"profile-section__title-text\"]") != null)
+            {
+                foreach (var lang in nodes.SelectNodes("//h2[@class=\"profile-section__title-text\"]").Last().ChildNodes)
                     Languages.Add(lang.InnerText);
+            }               
+            
 
-                ImgLinks = new List<string>();
-                foreach (var img in nodes.SelectNodes("//div[@class=\"photo-list__img_\"]")/*.ToList()*/)
+            ImgLinks = new List<string>();
+            if (nodes.SelectNodes("//div[@class=\"photo-list__img_\"]") != null)
+            {
+                foreach (var img in nodes.SelectNodes("//div[@class=\"photo-list__img_\"]"))
                 {
                     var x = img.OuterHtml.Split("<img src=\"")[1].Split("\" alt=\"")[0];
                     ImgLinks.Add(x);
-                }   
+                }
             }            
         }
 
@@ -75,8 +84,7 @@ namespace BadYou
             return new Person()
             {
                 Name = this.Name,
-                ID = this.ID,
-                Girl = this.Girl,
+                FirstName = this.FirstName,                
                 Age = this.Age,
                 
                 AboutMe = this.AboutMe,

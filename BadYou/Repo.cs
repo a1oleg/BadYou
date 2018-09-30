@@ -1,6 +1,7 @@
 ﻿using Neo4jClient;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BadYou
@@ -19,11 +20,20 @@ namespace BadYou
             }
         }
 
+        internal static string GetLast()
+        {
+            return db.Cypher
+            .Match("(user)")
+            .Where((Person user) => user.Name == "Last")
+            .Return(user => user.As<Person>())
+            .Results.First().FirstName;
+        }
+
         public static void MergePerson(Person person)
         {
             Person p = (Person)person.Clone();
             db.Cypher
-            .Merge("(vertex:Person{Name:{name}})")
+            .Merge("(vertex:Woman{Name:{name}})")
                     .OnCreate()
                     .Set("vertex = {p}")
                     .WithParams(new
@@ -33,17 +43,14 @@ namespace BadYou
                     })
                     .ExecuteWithoutResults();
 
-            if(person.Girl)
-            {
-                MergeAndJoin(person.Name, person.City, "City");
-                MergeAndJoin(person.Name, person.Country, "Country");
+            //MergeAndJoin(person.Name, person.City, "City");
+            //MergeAndJoin(person.Name, person.Country, "Country");
 
-                foreach(string pill in person.Pills)
-                    MergeAndJoin(person.Name, pill, "Pill");
+            foreach (string pill in person.Pills)
+                MergeAndJoin(person.Name, pill, "Pill");
 
-                foreach (string lang in person.Languages)
-                    MergeAndJoin(person.Name, lang, "Lang");
-            }   
+            foreach (string lang in person.Languages)
+                MergeAndJoin(person.Name, lang, "Lang");
         }
 
         private static void MergeAndJoin(string source, string target, string tag)
@@ -52,7 +59,17 @@ namespace BadYou
             MergeRelationship(source, target, tag);
         }
 
-        private static void MergeVertex(string name, string tag)
+        internal static void UpdateProp(string name, string prop, string value)
+        {
+            db.Cypher
+            .Match("(vertex)")
+            .Where((Person user) => user.Name == name)
+            .Set("user.FirstName = {val}")
+            .WithParam("val", value)
+            .ExecuteWithoutResults();
+        }
+
+        public static void MergeVertex(string name, string tag)
         {
             db.Cypher
             .Merge($"(t:{tag}{{Name:{{name}}}})")
