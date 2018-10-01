@@ -59,7 +59,7 @@ namespace BadYou
             MergeRelationship(source, target, tag);
         }
 
-        internal static void UpdateProp(string name, string prop, string value)
+        internal static void UpdateProp(string name, string prop, object value)
         {
             db.Cypher
             .Match("(vertex)")

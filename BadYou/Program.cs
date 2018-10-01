@@ -33,6 +33,7 @@ namespace BadYou
                 catch (Exception ex)
                 {
                     Repo.UpdateProp("Last", "FirstName", (start + i).ToString());
+                    Repo.UpdateProp("Last", "Age", i);
                     break;
                 }                
 
@@ -48,7 +49,10 @@ namespace BadYou
                     }
                 }
                 if (i == count)
+                {
                     Repo.UpdateProp("Last", "FirstName", (start + count).ToString());
+                    Repo.UpdateProp("Last", "Age", i);
+                }                   
             }            
         }
     }
